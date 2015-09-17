@@ -1,0 +1,15 @@
+{
+  "name": "flight_search",
+  "version": "1.0.0",
+  "description": "Check the student universe flight search website and present in a better way",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Nitin Pasumarthy",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.13.3",
+    "request": "^2.48.0"
+  }
+}
