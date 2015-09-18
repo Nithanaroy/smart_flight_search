@@ -42,7 +42,7 @@ app.get('/', function(req, res) {
     var total = sources.length * destinations.length * startDates.length * endDates.length;
     var debug_count = total / 10; // for every 10% percent print debug string
 
-    console.log('Cities,Start,Date,End Date,Price');
+    console.log('Sno,Cities,Start Date,End Date,Price,ToDuration,FroDuration,Airlines');
 
     for (var isource = 0; isource < sources.length; isource++) {
         for (var idestination = 0; idestination < destinations.length; idestination++) {
@@ -78,7 +78,10 @@ app.get('/', function(req, res) {
                             var cheapest_itinerary = {
                                 sd: null,
                                 ed: null,
-                                price: Infinity
+                                price: Infinity,
+                                toduration: null,
+                                froduration: null,
+                                airlines: null
                             };
                             var source, destination;
                             if (!body.itineraries) {
@@ -95,6 +98,11 @@ app.get('/', function(req, res) {
 
                                         source = itinerary.legs[0].departureAirport;
                                         destination = itinerary.legs[0].arrivalAirport;
+
+                                        cheapest_itinerary.toduration = (itinerary.legs[0].duration / 60).toFixed(2);
+                                        cheapest_itinerary.froduration = (itinerary.legs[1].duration / 60).toFixed(2);
+
+                                        cheapest_itinerary.airlines = itinerary.carrierDescription;
                                     }
                                 }
                                 // console.log(source + '-' + destination);
@@ -104,7 +112,10 @@ app.get('/', function(req, res) {
                                 table[source + '-' + destination].push(cheapest_itinerary);
                                 // console.log('table', table);
                                 // console.log(source + '-' + destination, JSON.stringify(cheapest_itinerary));
-                                console.log([counter, source + '-' + destination, cheapest_itinerary.sd, cheapest_itinerary.ed, cheapest_itinerary.price].join(','));
+                                console.log([counter, source + '-' + destination, cheapest_itinerary.sd, cheapest_itinerary.ed,
+                                    cheapest_itinerary.price, cheapest_itinerary.toduration,
+                                    cheapest_itinerary.froduration, cheapest_itinerary.airlines
+                                ].join(','));
                             }
                             // console.log('\n\n')
                         }
