@@ -1,0 +1,21 @@
+{
+  "name": "flight_search",
+  "main": "index.js",
+  "version": "0.0.0",
+  "homepage": "https://github.com/Nithanaroy/smart_flight_search",
+  "authors": [
+    "Nitin Pasumarthy <nithanaroy@gmail.com>"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "bootstrap": "~3.3.5",
+    "jquery": "~2.1.4"
+  }
+}

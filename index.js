@@ -2,6 +2,7 @@ var request = require('request').defaults({
     jar: true
 });
 var sleep = require('sleep');
+var Q = require('q');
 var D = false; // Toggle for printing debug strings on console
 
 (function main() {
@@ -9,11 +10,30 @@ var D = false; // Toggle for printing debug strings on console
     // Should we start the app as a web server or a command line tool depends on the number of command line arguments when running this file
     if (commandLineArgs.length === 6) {
         // node index.js   PHX   HYD,BLR,BOM,DEL,MAA,GOI,IXE  2015-12-24T00:00:00.000,2015-12-25T00:00:00.000   2016-01-16T00:00:00.000,2016-01-17T00:00:00.000
-        var args = getRequestArgumentsFromCommandLine(commandLineArgs);
+        var args = getRequestArguments(commandLineArgs.slice(2));
         printCheapest(args.sources, args.destinations, args.startDates, args.endDates);
     } else {
         var express = require('express');
         var app = express();
+
+        var path = require('path'),
+            favicon = require('serve-favicon'),
+            logger = require('morgan'),
+            cookieParser = require('cookie-parser'),
+            bodyParser = require('body-parser');
+
+
+        // view engine setup
+        app.set('views', path.join(process.cwd(), 'views'));
+        app.set('view engine', 'jade');
+
+        app.use(bodyParser.json());
+        app.use(bodyParser.urlencoded({
+            extended: true
+        }));
+        app.use(cookieParser());
+        app.use(express.static(path.join(process.cwd(), 'public')));
+        app.use('/components', express.static(path.join(process.cwd(), 'public/components')));
 
         var server = app.listen(3000, function() {
             var port = server.address().port;
@@ -24,21 +44,21 @@ var D = false; // Toggle for printing debug strings on console
     }
 })();
 
-function getRequestArgumentsFromCommandLine(args) {
+function getRequestArguments(args) {
     // All possible source airpots you want to fly from. Airport acronym from Student Universe website
-    var sources = args[2].split(',').map(function(curr) {
+    var sources = args[0].split(',').map(function(curr) {
         return curr.trim();
     });
     // All possible destinations you can fly to. Airport acronyms from Student Universe website
-    var destinations = args[3].split(',').map(function(curr) {
+    var destinations = args[1].split(',').map(function(curr) {
         return curr.trim();
     });;
     // All possible dates on which you want to start
-    var startDates = args[4].split(',').map(function(curr) {
+    var startDates = args[2].split(',').map(function(curr) {
         return curr.trim();
     });
     // All possible dates you want to return back. Has to have at least one.
-    var endDates = args[5].split(',').map(function(curr) {
+    var endDates = args[3].split(',').map(function(curr) {
         return curr.trim();
     });
 
@@ -51,6 +71,8 @@ function getRequestArgumentsFromCommandLine(args) {
 }
 
 function printCheapest(sources, destinations, startDates, endDates) {
+    var deferred = Q.defer();
+
     var url = 'https://www.studentuniverse.com/wapi/flightsWapi/searchFlightsSpanned';
     var data = {
         "tripElements": [{
@@ -89,7 +111,7 @@ function printCheapest(sources, destinations, startDates, endDates) {
             for (var isd = 0; isd < startDates.length; isd++) {
                 for (var ied = 0; ied < endDates.length; ied++) {
 
-                    // Required not to flood the Student Universe server. 
+                    // We sleep for sometime so as not to flood the Student Universe server. 
                     // Can try setTimeout() also
                     sleep.usleep(500000); // 500 milli seconds
 
@@ -117,7 +139,7 @@ function printCheapest(sources, destinations, startDates, endDates) {
                         if (error) {
                             // Can be SOCKET Timeout, Server Hang Up etc.
                             console.log(counter, 'error', error);
-                            //res.status(500).send("Error in POST call");
+                            deferred.reject(error);
                         } else {
                             var cheapest_itinerary = {
                                 sd: null, // start date of the cheapest itinearary
@@ -163,9 +185,10 @@ function printCheapest(sources, destinations, startDates, endDates) {
                                 ].join(','));
 
                                 if (counter >= total_combinations) {
-                                    console.log('Done!')
+                                    console.log('Done processing all requests');
+                                    deferred.resolve(comparison_table);
                                 };
-
+                                deferred.notify(counter / total_combinations);
                             }
                         }
                         counter += 1;
@@ -174,22 +197,56 @@ function printCheapest(sources, destinations, startDates, endDates) {
             }
         }
     }
+
+    return deferred.promise;
 }
 
 function defineRoutes(app) {
     app.get('/', function(req, res) {
-        // All possible source airpots you want to fly from. Airport acronym from Student Universe website
-        var sources = ['PHX'],
-            // All possible destinations you can fly to. Airport acronyms from Student Universe website
-            destinations = ['HYD', 'BLR', 'BOM'];
-        // All possible dates on which you want to start
-        var startDates = ["2015-12-24T00:00:00.000", "2015-12-25T00:00:00.000", "2015-12-26T00:00:00.000"],
-            // All possible dates you want to return back. Has to have at least one.
-            endDates = ["2016-01-16T00:00:00.000", "2016-01-17T00:00:00.000"];
+        res.render('index', {
+            title: 'Flight Search # Powered by Student Universe'
+        });
+        // res.send("Triggered the requests. Check the console for results.");
+    });
 
-        printCheapest(sources, destinations, startDates, endDates);
-
-        // send the response immediately and dont wait for all computations to complete
-        res.send("Triggered the requests. Check the console for results.");
+    /**
+     * Returns the price table for all possible combinations returned by Student Universe
+     *
+     * Request:
+     * {
+            src: 'PHX',
+            dest: 'DEL, BOM',
+            sd: '2015-12-24T00:00:00.000,2015-12-25T00:00:00.000',
+            ed: '2016-01-16T00:00:00.000,2016-01-17T00:00:00.000'
+        }
+     * Response:
+     * {
+            "table": {
+                "PHX-DEL": [{
+                    "sd": "2015-12-24T13:10:00",
+                    "ed": "2016-01-16T04:25:00",
+                    "price": 1654.99,
+                    "toduration": "25.17",
+                    "froduration": "31.15",
+                    "airlines": "Multiple Airlines"
+                }]
+            }
+        }
+     */
+    app.post('/fetchPriceTable', function(req, res) {
+        var args = getRequestArguments([req.body.src, req.body.dest, req.body.sd, req.body.ed]);
+        printCheapest(args.sources, args.destinations, args.startDates, args.endDates)
+            .then(function(priceTable) {
+                res.json({
+                    table: priceTable
+                });
+            }, function(error) {
+                res.json({
+                    error: error
+                });
+            }, function(progress) {
+                console.log("progress", progress);
+                res.write(Math.random() * 100);
+            });
     });
 }

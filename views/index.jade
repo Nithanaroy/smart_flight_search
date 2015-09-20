@@ -1,0 +1,44 @@
+extends layout
+
+block content
+	.container
+	h1 Flight Search
+	div#alert-msg.alert.alert-info(role="alert") Welcome!
+	form(role='form-group')
+		//- .form-group
+		//- 	label(for='src') Sources
+		//- 	input#src.form-control(type='text', name='src', placeholder='Possible source airports seperated by comma - PHX, LAS', title='Possible source airports seperated by comma - PHX, LAS', value="PHX", autofocus=true)
+		//- .form-group
+		//- 	label(for='dest') Destinations
+		//- 	input#dest.form-control(type='text', name='dest', placeholder='Possible destination airports seperated by comma - DEL, BOM', title='Possible destination airports seperated by comma - DEL, BOM', value="DEL, BOM")
+		//- .form-group
+		//- 	label(for='sd') Onward Dates
+		//- 	input#sd.form-control(type='text', name='sd', placeholder='All possible journey start dates - 2015-12-24T00:00:00.000,2015-12-25T00:00:00.000', title='All possible journey start dates - 2015-12-24T00:00:00.000,2015-12-25T00:00:00.000', value="2015-12-24T00:00:00.000,2015-12-25T00:00:00.000")
+		//- .form-group
+		//- 	label(for='ed') Return Dates
+		//- 	input#ed.form-control(type='text', name='ed', placeholder='All possible journey return dates - 2016-01-16T00:00:00.000,2016-01-17T00:00:00.000', title='All possible journey return dates - 2016-01-16T00:00:00.000,2016-01-17T00:00:00.000', value="2016-01-16T00:00:00.000,2016-01-17T00:00:00.000")
+		.form-group
+			label(for='src') Sources
+			input#src.form-control(type='text', name='src', placeholder='Possible source airports seperated by comma - PHX, LAS', title='Possible source airports seperated by comma - PHX, LAS', value="PHX", autofocus=true)
+		.form-group
+			label(for='dest') Destinations
+			input#dest.form-control(type='text', name='dest', placeholder='Possible destination airports seperated by comma - DEL, BOM', title='Possible destination airports seperated by comma - DEL, BOM', value="DEL")
+		.form-group
+			label(for='sd') Onward Dates
+			input#sd.form-control(type='text', name='sd', placeholder='All possible journey start dates - 2015-12-24T00:00:00.000,2015-12-25T00:00:00.000', title='All possible journey start dates - 2015-12-24T00:00:00.000,2015-12-25T00:00:00.000', value="2015-12-24T00:00:00.000")
+		.form-group
+			label(for='ed') Return Dates
+			input#ed.form-control(type='text', name='ed', placeholder='All possible journey return dates - 2016-01-16T00:00:00.000,2016-01-17T00:00:00.000', title='All possible journey return dates - 2016-01-16T00:00:00.000,2016-01-17T00:00:00.000', value="2016-01-16T00:00:00.000")
+		button#track-btn.btn.btn-primary(type='button') Generate Price Chart :)
+
+	table#output.table.table-striped.table-bordered.table-hover.table-condensed.margin-top-medium
+		thead
+			tr
+				td Trip
+				td Start Date
+				td End Date
+				td Price ($)
+				td Onward Duration (hrs)
+				td Return Duration (hrs)
+				td Airlines
+		tbody

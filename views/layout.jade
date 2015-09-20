@@ -1,0 +1,21 @@
+doctype html
+html(lang='en')
+  head
+    meta(charset='UTF-8')
+    meta(name='viewport', content='width=device-width')
+    title= title
+    block css
+      link(rel='stylesheet', href='/css/style.css')
+      //- bower:css
+      link(rel='stylesheet', href='/components/bootstrap/dist/css/bootstrap.min.css')
+      //- endbower
+    block js
+      <!-- bower:js -->
+      script(src='/components/jQuery/dist/jquery.js')
+      script(src='/components/bootstrap/dist/js/bootstrap.min.js')
+      <!-- endbower -->
+      script(src='/js/main.js')
+  body
+    block content
+
+    div.well Using Student Universe's (https://www.studentuniverse.com/flights) APIs
