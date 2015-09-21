@@ -1,5 +1,5 @@
 # Smart Flight Search
-The aim of this app is to find the cheapest prices for all possible combinations of flight between given sources, destinations, journey start and end dates.
+The aim of this app is to find the cheapest prices for all possible combinations of flights between given sources, destinations, journey start and end dates.
 
 All the data is pulled from Student Universe website.
 
@@ -28,8 +28,8 @@ To access the site, open a browser and visit http://localhost:3000.
 The prefilled form shows the format of the input expected. 
 To get the airport codes, i.e. PHX for Phoenix, visit student universe and perform a search.
 
-The progress of the entire operation is shown in the alert menu.
+The progress of the entire operation is shown in the alert section.
 
 ## Contribution
-I created this as a fun project for saving time for myself trying to find the best deal in situations where we are open for dates and certain locations.
-Feel free to clone the repository and submit a pull request if you would like to contribute. Thanks to Student Universe website for providing such simple API.
+I created this as a fun project for saving time for myself trying to find the best deals in situations where we are open for mulitple dates and locations.
+Feel free to clone the repository and submit a pull request if you would like to contribute as developer. Thanks to Student Universe website for providing such a simple API.
