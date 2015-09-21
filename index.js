@@ -5,6 +5,8 @@ var sleep = require('sleep');
 var Q = require('q');
 var D = false; // Toggle for printing debug strings on console
 
+var openConnections = []; // List of open connections for sending server side messages. Primarily used sending progress
+
 (function main() {
     var commandLineArgs = process.argv;
     // Should we start the app as a web server or a command line tool depends on the number of command line arguments when running this file
@@ -92,7 +94,7 @@ function printCheapest(sources, destinations, startDates, endDates) {
         "phoneInDiscountCode": null,
         "searchKey": null
     }
-    var comparison_table = {}, // price table of all possible combinations of sources, destination and dates
+    var comparison_table = [], // price table of all possible combinations of sources, destination and dates
         counter = 1;
 
     // Total combinations of sources, destinations, start ends and return dates for logging
@@ -100,6 +102,8 @@ function printCheapest(sources, destinations, startDates, endDates) {
     var iprogress = total_combinations;
     console.log('Total Combinations: ' + total_combinations);
     var status_interval = total_combinations / 10; // for every 10% percent print status string
+    var sendReqWt = 0.25; // Weight of sending request. Used for computing the progress of work done
+    var processingResWt = 0.75; // Weight of processing the response. Used for computing the progress of work done
 
     // CSV Formatted output
     console.log('Sno,Cities,Start Date,End Date,Price,ToDuration,FroDuration,Airlines');
@@ -107,7 +111,6 @@ function printCheapest(sources, destinations, startDates, endDates) {
     // Loop over each source, destination, start and end dates
     for (var isource = 0; isource < sources.length; isource++) {
         for (var idestination = 0; idestination < destinations.length; idestination++) {
-            comparison_table[sources[isource] + "-" + destinations[idestination]] = [];
             for (var isd = 0; isd < startDates.length; isd++) {
                 for (var ied = 0; ied < endDates.length; ied++) {
 
@@ -125,9 +128,10 @@ function printCheapest(sources, destinations, startDates, endDates) {
 
                     // Print status of requests being sent at the intervals of `status_interval`
                     if (D && iprogress % status_interval === 0) {
-                        console.log('Sent request: ', data.tripElements);
+                        console.log('Sending request: ', data.tripElements);
                     };
                     iprogress -= 1;
+                    sendServerMessage((1 - (iprogress / total_combinations)) * sendReqWt);
 
                     // HTTP request to StudentUniverse site
                     request({
@@ -142,6 +146,7 @@ function printCheapest(sources, destinations, startDates, endDates) {
                             deferred.reject(error);
                         } else {
                             var cheapest_itinerary = {
+                                sourceDestination: null, // cheapest itinerary for the source and destination
                                 sd: null, // start date of the cheapest itinearary
                                 ed: null, // end date of the cheapest itinearary
                                 price: Infinity, // price of the cheapest itinearary
@@ -149,7 +154,6 @@ function printCheapest(sources, destinations, startDates, endDates) {
                                 froduration: null, // return journey duration of the cheapest itinearary
                                 airlines: null // name of the airlines of the cheapest itinearary
                             };
-                            var source, destination;
                             if (!body.itineraries) {
                                 if (D) {
                                     // StudentUniverse couldnt find results for a source - destination - start date - end date combination 
@@ -161,12 +165,10 @@ function printCheapest(sources, destinations, startDates, endDates) {
                                     var itinerary = body.itineraries[i];
                                     if (itinerary.total < cheapest_itinerary.price) {
                                         // Set all the fields of the cheapest itinerary so far
+                                        cheapest_itinerary.sourceDestination = itinerary.legs[0].departureAirport + '-' + itinerary.legs[0].arrivalAirport;
                                         cheapest_itinerary.sd = itinerary.legs[0].departureTime;
                                         cheapest_itinerary.ed = itinerary.legs[itinerary.legs.length - 1].departureTime;
                                         cheapest_itinerary.price = itinerary.total;
-
-                                        source = itinerary.legs[0].departureAirport;
-                                        destination = itinerary.legs[0].arrivalAirport;
 
                                         cheapest_itinerary.toduration = (itinerary.legs[0].duration / 60).toFixed(2);
                                         cheapest_itinerary.froduration = (itinerary.legs[1].duration / 60).toFixed(2);
@@ -175,20 +177,15 @@ function printCheapest(sources, destinations, startDates, endDates) {
                                     }
                                 }
                                 // Add the key of the form 'source-destination' if not present and initialize. Eg: LAX-BLR
-                                comparison_table[source + '-' + destination] =
-                                    comparison_table[source + '-' + destination] || [];
-                                comparison_table[source + '-' + destination].push(cheapest_itinerary);
+                                comparison_table.push(cheapest_itinerary);
                                 // print the output in CSV format on console
-                                console.log([counter, source + '-' + destination, cheapest_itinerary.sd, cheapest_itinerary.ed,
-                                    cheapest_itinerary.price, cheapest_itinerary.toduration,
-                                    cheapest_itinerary.froduration, cheapest_itinerary.airlines
-                                ].join(','));
+                                console.log([counter, Object.keys(cheapest_itinerary).map(function(key) { return cheapest_itinerary[key]; }).join(',')].join(','));
 
+                                sendServerMessage((counter / total_combinations) * processingResWt + sendReqWt); // Min is value of sendReqWt
                                 if (counter >= total_combinations) {
                                     console.log('Done processing all requests');
                                     deferred.resolve(comparison_table);
                                 };
-                                deferred.notify(counter / total_combinations);
                             }
                         }
                         counter += 1;
@@ -221,16 +218,26 @@ function defineRoutes(app) {
         }
      * Response:
      * {
-            "table": {
-                "PHX-DEL": [{
+            "table": ]
+                {
+                    "sourceDestination": "PHX-DEL",
                     "sd": "2015-12-24T13:10:00",
                     "ed": "2016-01-16T04:25:00",
                     "price": 1654.99,
                     "toduration": "25.17",
                     "froduration": "31.15",
                     "airlines": "Multiple Airlines"
-                }]
-            }
+                },
+                {
+                    "sourceDestination": "PHX-HYD",
+                    "sd": "2015-12-24T13:10:00",
+                    "ed": "2016-01-16T04:25:00",
+                    "price": 1800.99,
+                    "toduration": "25.17",
+                    "froduration": "31.15",
+                    "airlines": "Multiple Airlines"
+                },
+            ]
         }
      */
     app.post('/fetchPriceTable', function(req, res) {
@@ -244,9 +251,54 @@ function defineRoutes(app) {
                 res.json({
                     error: error
                 });
-            }, function(progress) {
-                console.log("progress", progress);
-                res.write(Math.random() * 100);
             });
+    });
+
+    /**
+     * Open connection for sending progress
+     */
+    app.get('/progress', function(req, res) {
+
+        // set timeout as high as possible
+        // req.socket.setTimeout(Infinity);
+
+        // send headers for event-stream connection
+        // see spec for more information
+        res.writeHead(200, {
+            'Content-Type': 'text/event-stream',
+            'Cache-Control': 'no-cache',
+            'Connection': 'keep-alive'
+        });
+        res.write('\n');
+
+        // push this res object to our global variable
+        openConnections.push(res);
+
+        // When the request is closed, e.g. the browser window
+        // is closed. We search through the open connections
+        // array and remove this connection.
+        req.on("close", function() {
+            var toRemove;
+            for (var j = 0; j < openConnections.length; j++) {
+                if (openConnections[j] == res) {
+                    toRemove = j;
+                    break;
+                }
+            }
+            openConnections.splice(j, 1);
+            console.log("\nOpen Socket Connections: " + openConnections.length + "\n");
+        });
+    });
+}
+
+/**
+ * Send a server message using the open connections
+ * Primarily used for sending progress
+ * @param  {String}
+ * @return {NULL}
+ */
+function sendServerMessage(message) {
+    openConnections.forEach(function(resp) {
+        resp.write("data: " + message + '\n\n'); // Note the extra newline
     });
 }
