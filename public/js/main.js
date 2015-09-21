@@ -1,6 +1,9 @@
 $(function() {
     $("#track-btn").click(function() {
         updateAlertMsg('Fetching results...');
+        $("#output").children("tbody").remove(); // remove existing results
+        var isOneWay = $("#ed").val().trim().length === 0;
+
         $.ajax({
             url: '/fetchPriceTable',
             method: 'post',
@@ -9,16 +12,32 @@ $(function() {
                 var priceTable = data.table;
                 for (var itrip in priceTable) {
                     var tr = $("<tr />");
-                    var srcDest = $("<td />").text(priceTable[itrip].sourceDestination);
-                    var startDate = $("<td />").text(priceTable[itrip].sd);
-                    var endDate = $("<td />").text(priceTable[itrip].ed);
+                    var srcDest = $("<td />").text(priceTable[itrip].source + '-' + priceTable[itrip].destination);
+                    var startDateTime = $("<td />").text(priceTable[itrip].sd);
+                    var endDateTime = $("<td />").text(priceTable[itrip].ed);
                     var price = $("<td />").text(priceTable[itrip].price);
                     var toduration = $("<td />").text(priceTable[itrip].toduration);
                     var froduration = $("<td />").text(priceTable[itrip].froduration);
                     var airlines = $("<td />").text(priceTable[itrip].airlines);
 
-                    $(tr).append(srcDest).append(startDate).append(endDate).append(price)
-                        .append(toduration).append(froduration).append(airlines);
+                    var source = priceTable[itrip].source;
+                    var destination = priceTable[itrip].destination;
+                    var startDate = priceTable[itrip].sd.split('T')[0];
+                    var endDate = priceTable[itrip].ed.split('T')[0];
+
+                    var href = 'https://www.studentuniverse.com/flights/1/' + source + '/' + destination + '/' + startDate;
+                    if (!isOneWay) {
+                        href += '/' + destination + '/' + source + '/' + endDate;
+                    }
+                    var link = $("<td />").html(
+                        $('<div />').addClass('truncate').html(
+                            $("<a />").attr({
+                                href: href,
+                                target: '_blank'
+                            }).text(href)));
+
+                    $(tr).append(srcDest).append(startDateTime).append(endDateTime).append(price)
+                        .append(toduration).append(froduration).append(airlines).append(link);
                     $("#output").append(tr);
                 }
                 updateAlertMsg('Completed!');

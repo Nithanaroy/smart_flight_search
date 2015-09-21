@@ -15,8 +15,8 @@ block content
 			label(for='sd') Onward Dates
 			input#sd.form-control(type='text', name='sd', placeholder='All possible journey start dates - 2015-12-24T00:00:00.000,2015-12-25T00:00:00.000', title='All possible journey start dates - 2015-12-24T00:00:00.000,2015-12-25T00:00:00.000', value="2015-12-24T00:00:00.000,2015-12-25T00:00:00.000")
 		.form-group
-			label(for='ed') Return Dates
-			input#ed.form-control(type='text', name='ed', placeholder='All possible journey return dates - 2016-01-16T00:00:00.000,2016-01-17T00:00:00.000', title='All possible journey return dates - 2016-01-16T00:00:00.000,2016-01-17T00:00:00.000', value="2016-01-16T00:00:00.000,2016-01-17T00:00:00.000")
+			label(for='ed') Return Dates (Blank if one way)
+			input#ed.form-control(type='text', name='ed', placeholder='Leave Blank if one way. All possible journey return dates - 2016-01-16T00:00:00.000,2016-01-17T00:00:00.000', title='Leave Blank if one way. All possible journey return dates - 2016-01-16T00:00:00.000,2016-01-17T00:00:00.000', value="2016-01-16T00:00:00.000,2016-01-17T00:00:00.000")
 		
 		//- .form-group
 		//- 	label(for='src') Sources
@@ -42,4 +42,5 @@ block content
 				td Onward Duration (hrs)
 				td Return Duration (hrs)
 				td Airlines
+				td All results for this combination
 		tbody
