@@ -12,10 +12,10 @@ block content
 			label(for='dest') Destinations
 			input#dest.form-control(type='text', name='dest', placeholder='Possible destination airports seperated by comma - DEL, BOM', title='Possible destination airports seperated by comma - DEL, BOM', value="DEL, BOM")
 		.form-group
-			label(for='sd') Onward Dates
+			label(for='sd') Onward Dates [Careful with format]
 			input#sd.form-control(type='text', name='sd', placeholder='All possible journey start dates - 2015-12-24T00:00:00.000,2015-12-25T00:00:00.000', title='All possible journey start dates - 2015-12-24T00:00:00.000,2015-12-25T00:00:00.000', value="2015-12-24T00:00:00.000,2015-12-25T00:00:00.000")
 		.form-group
-			label(for='ed') Return Dates (Blank if one way)
+			label(for='ed') Return Dates (Leave blank if one way) [Careful with format]
 			input#ed.form-control(type='text', name='ed', placeholder='Leave Blank if one way. All possible journey return dates - 2016-01-16T00:00:00.000,2016-01-17T00:00:00.000', title='Leave Blank if one way. All possible journey return dates - 2016-01-16T00:00:00.000,2016-01-17T00:00:00.000', value="2016-01-16T00:00:00.000,2016-01-17T00:00:00.000")
 		
 		//- .form-group
@@ -36,8 +36,8 @@ block content
 		thead
 			tr
 				td Trip
-				td Start Date
-				td End Date
+				td Start Date (24 hrs format)
+				td End Date (24 hrs format)
 				td Price ($)
 				td Onward Duration (hrs)
 				td Return Duration (hrs)

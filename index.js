@@ -3,7 +3,7 @@ var request = require('request').defaults({
 });
 var sleep = require('sleep');
 var Q = require('q');
-var D = true; // Toggle for printing debug strings on console
+var D = false; // Toggle for printing debug strings on console
 
 var openConnections = []; // List of open connections for sending server side messages. Primarily used sending progress
 
@@ -116,7 +116,7 @@ function printCheapest(sources, destinations, startDates, endDates) {
         startDates.length * (endDates.length > 0 ? endDates.length : 1);
     var iprogress = total_combinations;
     console.log('Total Combinations: ' + total_combinations);
-    var status_interval = total_combinations / 1; // for every `status_interval` completion of combinations, print status string
+    var status_interval = total_combinations / 10; // for every `status_interval` completion of combinations, print status string
     var sendReqWt = 0.25; // Weight of sending request. Used for computing the progress of work done
     var processingResWt = 0.75; // Weight of processing the response. Used for computing the progress of work done
     var isOneWay = endDates.length == 0; // true if journey is one way
@@ -173,11 +173,6 @@ function printCheapest(sources, destinations, startDates, endDates) {
             console.log([counter, Object.keys(cheapest_itinerary).map(function(key) {
                 return cheapest_itinerary[key];
             }).join(',')].join(','));
-            sendServerMessage((counter / total_combinations) * processingResWt + sendReqWt); // sendReqWt is the minimum value
-            if (counter >= total_combinations) {
-                console.log('Done processing all requests');
-                deferred.resolve(comparison_table);
-            };
         }
     }
 
@@ -207,6 +202,11 @@ function printCheapest(sources, destinations, startDates, endDates) {
                     airlines: null // name of the airlines of the cheapest itinearary
                 };
                 setCheapestItinerary(body, cheapest_itinerary);
+                sendServerMessage((counter / total_combinations) * processingResWt + sendReqWt); // sendReqWt is the minimum value
+                if (counter >= total_combinations) {
+                    console.log('Done processing all requests');
+                    deferred.resolve(comparison_table);
+                };
             }
             counter += 1;
         });

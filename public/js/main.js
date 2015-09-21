@@ -13,8 +13,8 @@ $(function() {
                 for (var itrip in priceTable) {
                     var tr = $("<tr />");
                     var srcDest = $("<td />").text(priceTable[itrip].source + '-' + priceTable[itrip].destination);
-                    var startDateTime = $("<td />").text(priceTable[itrip].sd);
-                    var endDateTime = $("<td />").text(priceTable[itrip].ed);
+                    var startDateTime = $("<td />").text(getFormattedDateTime(priceTable[itrip].sd));
+                    var endDateTime = $("<td />").text(getFormattedDateTime(priceTable[itrip].ed));
                     var price = $("<td />").text(priceTable[itrip].price);
                     var toduration = $("<td />").text(priceTable[itrip].toduration);
                     var froduration = $("<td />").text(priceTable[itrip].froduration);
@@ -60,5 +60,20 @@ $(function() {
 
     function updateAlertMsg(message) {
         $("#alert-msg").html(message);
+    }
+
+    /**
+     * Returns user friendly date time format for a given ISO date time
+     * Returns the same value if invalid date is passed
+     * @param  {string} dateTime datetime string in ISO format
+     * @return {string}          user friendly date and time format
+     */
+    function getFormattedDateTime(dateTime) {
+        if (isNaN(Date.parse(dateTime)))
+            return dateTime;
+        var months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        var d = new Date(dateTime);
+        return months[d.getMonth()] + '' + d.getDate() + ', ' + d.getFullYear() +
+            ' at ' + d.getHours() + ':' + d.getMinutes() + ' hrs'
     }
 });
