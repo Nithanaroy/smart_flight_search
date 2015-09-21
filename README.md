@@ -15,14 +15,17 @@ This app can be accessed on a command line or on a browser.
 ## Usage
 `index.js` is the main file and can run both as a command line utility or as web server.
 ### On Command line / Terminal / Command Prompt
-The syntax of the command is `node index.js <source_airports> <destination_airports> <journey_start_dates> <journey_end_dates>`
+The syntax of the command is `node index.js <source_airports> <destination_airports> <journey_start_dates> [<journey_end_dates>]`
 
-For example, `node index.js   PHX   HYD,BLR,BOM  2015-12-24T00:00:00.000,2015-12-25T00:00:00.000   2016-01-16T00:00:00.000,2016-01-17T00:00:00.000`.
+For example, 
+
+`node index.js   PHX   HYD,BLR,BOM  2015-12-24T00:00:00.000,2015-12-25T00:00:00.000   2016-01-16T00:00:00.000,2016-01-17T00:00:00.000` or 
+
+`node index.js   PHX   HYD,BLR,BOM  2015-12-24T00:00:00.000,2015-12-25T00:00:00.000` for one way trips.
 Each argument is comma separated if there are multiple values. The program makes asynchronous HTTP calls to StudentUniverse website and displays the results one per line.
 
 ### As a web server
-If any of the arguments are missing as mentioned in above section, `index.js` runs as a web server. 
-`node index.js` starts the server and by default listens on port 3000.
+`node index.js` without any arguments starts a web server and by default listens on port 3000.
 To access the site, open a browser and visit http://localhost:3000.
 
 The prefilled form shows the format of the input expected. 
